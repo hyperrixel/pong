@@ -23,7 +23,7 @@ device = 'cuda' if ALLOW_CUDA and torch.cuda.is_available() else 'cpu'
 print('Training on {}'.format(device))
 
 
-class PongAutoEncoder1(torch.nn.Module):
+class PongAutoEncoder(torch.nn.Module):
     """
     Pong encoder-decoder network
     ============================
@@ -81,6 +81,41 @@ class PongAutoEncoder1(torch.nn.Module):
         self.tcnn9 = torch.nn.ConvTranspose2d(3, 3, 3, stride=1, padding=1,
                                               bias=True)
         self.dbn9 = torch.nn.BatchNorm2d(3)
+
+
+    def encode(self, x : torch.Tensor) -> torch.Tensor:
+        """
+        Perform encode
+        ==============
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input data to be forwarded.
+
+        Returns
+        -------
+        torch.Tensor
+            Model output.
+        """
+
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn1(self.cnn1(x))),
+                                           inplace=True)
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn2(self.cnn2(x))),
+                                           inplace=True)
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn3(self.cnn3(x))),
+                                           inplace=True)
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn4(self.cnn4(x))),
+                                           inplace=True)
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn5(self.cnn5(x))),
+                                           inplace=True)
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn6(self.cnn6(x))),
+                                           inplace=True)
+        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn7(self.cnn7(x))),
+                                           inplace=True)
+        x = torch.flatten(x, 1)
+        x = torch.tanh(self.fc1(x))
+        return x
 
 
     def forward(self, x : torch.Tensor) -> torch.Tensor:
@@ -143,119 +178,6 @@ class PongAutoEncoder1(torch.nn.Module):
         return x
 
 
-class PongAutoEncoder2(torch.nn.Module):
-    """
-    Pong encoder-decoder network
-    ============================
-    """
-
-    def __init__(self):
-        """
-        Initialize an instance of the object
-        ====================================
-        """
-
-        super().__init__()
-
-        self.maxpool = torch.nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.cnn1 = torch.nn.Conv2d(3, 64, 3, stride=1, padding=1, bias=True)
-        self.bn1 = torch.nn.BatchNorm2d(64)
-        self.cnn2 = torch.nn.Conv2d(64, 128, 3, stride=1, padding=1, bias=True)
-        self.bn2 = torch.nn.BatchNorm2d(128)
-        self.cnn3 = torch.nn.Conv2d(128, 256, 3, stride=1, padding=1, bias=True)
-        self.bn3 = torch.nn.BatchNorm2d(256)
-        self.cnn4 = torch.nn.Conv2d(256, 512, 3, stride=1, padding=1, bias=True)
-        self.bn4 = torch.nn.BatchNorm2d(512)
-        self.cnn5 = torch.nn.Conv2d(512, 512, 3, stride=1, padding=1, bias=True)
-        self.bn5 = torch.nn.BatchNorm2d(512)
-        self.cnn6 = torch.nn.Conv2d(512, 512, 3, stride=1, padding=1, bias=True)
-        self.bn6 = torch.nn.BatchNorm2d(512)
-        self.cnn7 = torch.nn.Conv2d(512, 512, 3, stride=1, padding=1, bias=True)
-        self.bn7 = torch.nn.BatchNorm2d(512)
-        self.fc1 = torch.nn.Linear(512, 2048, bias=True)
-        self.tcnn1 = torch.nn.ConvTranspose2d(512, 512, 3, stride=2, padding=1,
-                                              bias=True)
-        self.dbn1 = torch.nn.BatchNorm2d(512)
-        self.tcnn2 = torch.nn.ConvTranspose2d(512, 512, 3, stride=2, padding=0,
-                                              bias=True)
-        self.dbn2 = torch.nn.BatchNorm2d(512)
-        self.tcnn3 = torch.nn.ConvTranspose2d(512, 512, 3, stride=2, padding=1,
-                                              bias=True)
-        self.dbn3 = torch.nn.BatchNorm2d(512)
-        self.tcnn4 = torch.nn.ConvTranspose2d(512, 512, 3, stride=1, padding=0,
-                                              bias=True)
-        self.dbn4 = torch.nn.BatchNorm2d(512)
-        self.tcnn5 = torch.nn.ConvTranspose2d(512, 256, 3, stride=1, padding=1,
-                                              bias=True)
-        self.dbn5 = torch.nn.BatchNorm2d(256)
-        self.tcnn6 = torch.nn.ConvTranspose2d(256, 128, 3, stride=1, padding=1,
-                                              bias=True)
-        self.dbn6 = torch.nn.BatchNorm2d(128)
-        self.tcnn7 = torch.nn.ConvTranspose2d(128, 64, 3, stride=1, padding=1,
-                                              bias=True)
-        self.dbn7 = torch.nn.BatchNorm2d(64)
-        self.tcnn8 = torch.nn.ConvTranspose2d(64, 3, 3, stride=1, padding=1,
-                                              bias=True)
-        self.dbn8 = torch.nn.BatchNorm2d(3)
-        self.tcnn9 = torch.nn.ConvTranspose2d(3, 3, 3, stride=1, padding=1,
-                                              bias=True)
-        self.dbn9 = torch.nn.BatchNorm2d(3)
-
-
-    def forward(self, x : torch.Tensor) -> torch.Tensor:
-        """
-        Perform forward pass
-        ====================
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input data to be forwarded.
-
-        Returns
-        -------
-        torch.Tensor
-            Model output.
-        """
-
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn1(self.cnn1(x))),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn2(self.cnn2(x))),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn3(self.cnn3(x))),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn4(self.cnn4(x))),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn5(self.cnn5(x))),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn6(self.cnn6(x))),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.maxpool(self.bn7(self.cnn7(x))),
-                                           inplace=True)
-        x = torch.flatten(x, 1)
-        x = torch.tanh(self.fc1(x))
-        x = x.view(-1, 512, 2, 2)
-        x = torch.nn.functional.leaky_relu(self.dbn1(self.tcnn1(x)),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(torch.nn.functional.interpolate(
-            self.dbn2(self.tcnn2(x)), scale_factor=2), inplace=True)
-        x = torch.nn.functional.leaky_relu(torch.nn.functional.interpolate(
-            self.dbn3(self.tcnn3(x)), scale_factor=2), inplace=True)
-        x = torch.nn.functional.leaky_relu(torch.nn.functional.interpolate(
-            self.dbn4(self.tcnn4(x)), scale_factor=2), inplace=True)
-        x = torch.nn.functional.leaky_relu(torch.nn.functional.interpolate(
-            self.dbn5(self.tcnn5(x)), scale_factor=2), inplace=True)
-        x = torch.nn.functional.leaky_relu(self.dbn6(self.tcnn6(x)),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.dbn7(self.tcnn7(x)),
-                                           inplace=True)
-        x = torch.nn.functional.leaky_relu(self.dbn8(self.tcnn8(x)),
-                                           inplace=True)
-        x = torch.sigmoid(self.dbn9(self.tcnn9(x)))
-        return x
-
-
 def list_images() -> list:
     """
     Create list of image files
@@ -298,7 +220,7 @@ def train_model():
     """
 
     imagelist = list_images()
-    model = PongAutoEncoder2()
+    model = PongAutoEncoder()
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     criterion = torch.nn.L1Loss()
