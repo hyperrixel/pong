@@ -51,6 +51,34 @@ class PongContentEncoder(torch.nn.Module):
         self.dropout = torch.nn.Dropout(p=0.2)
 
 
+    def encode(self, x : torch.Tensor) -> torch.Tensor:
+        """
+        Perform encode
+        ==============
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input data to be forwarded.
+
+        Returns
+        -------
+        torch.Tensor
+            Model output.
+        """
+
+        x = torch.nn.functional.leaky_relu(
+                                    self.e_bn1(self.e_fc1(x)), inplace=True)
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.e_bn2(self.e_fc2(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.e_bn3(self.e_fc3(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.e_bn4(self.e_fc4(x)), inplace=True))
+        x = torch.tanh(self.m_fc(x))
+        return x
+
+
     def forward(self, x : torch.Tensor) -> torch.Tensor:
         """
         Perform forward pass
@@ -67,14 +95,21 @@ class PongContentEncoder(torch.nn.Module):
             Model output.
         """
 
-        x = torch.nn.functional.leaky_relu(self.e_bn1(self.e_fc1(x)), inplace=True)
-        x = self.dropout(torch.nn.functional.leaky_relu(self.e_bn2(self.e_fc2(x)), inplace=True))
-        x = self.dropout(torch.nn.functional.leaky_relu(self.e_bn3(self.e_fc3(x)), inplace=True))
-        x = self.dropout(torch.nn.functional.leaky_relu(self.e_bn4(self.e_fc4(x)), inplace=True))
+        x = torch.nn.functional.leaky_relu(
+                                    self.e_bn1(self.e_fc1(x)), inplace=True)
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.e_bn2(self.e_fc2(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.e_bn3(self.e_fc3(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.e_bn4(self.e_fc4(x)), inplace=True))
         x = torch.tanh(self.m_fc(x))
-        x = self.dropout(torch.nn.functional.leaky_relu(self.d_bn1(self.d_fc1(x)), inplace=True))
-        x = self.dropout(torch.nn.functional.leaky_relu(self.d_bn2(self.d_fc2(x)), inplace=True))
-        x = self.dropout(torch.nn.functional.leaky_relu(self.d_bn3(self.d_fc3(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.d_bn1(self.d_fc1(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.d_bn2(self.d_fc2(x)), inplace=True))
+        x = self.dropout(torch.nn.functional.leaky_relu(
+                                    self.d_bn3(self.d_fc3(x)), inplace=True))
         x = torch.sigmoid(self.d_fc4(x))
 
         return x
